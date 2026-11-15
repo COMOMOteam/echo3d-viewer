@@ -1,0 +1,41 @@
+{
+ "labels": [
+  {
+   "id": 1,
+   "name": "脈管(候補、内腔が暗い)",
+   "color": "#f2c14e",
+   "voxels": 12019
+  },
+  {
+   "id": 2,
+   "name": "皮下",
+   "color": "#d08bd6",
+   "voxels": 80743
+  },
+  {
+   "id": 3,
+   "name": "腱と筋(浅指屈筋・深指屈筋の候補)",
+   "color": "#f08a3c",
+   "voxels": 552723
+  },
+  {
+   "id": 4,
+   "name": "深い筋(候補)",
+   "color": "#4caf50",
+   "voxels": 723166
+  },
+  {
+   "id": 5,
+   "name": "骨と音響陰影",
+   "color": "#5b7fa6",
+   "voxels": 452256
+  },
+  {
+   "id": 10,
+   "name": "筋膜(膜の線)",
+   "color": "#f5f5dc",
+   "voxels": 37678
+  }
+ ],
+ "source": "sam2_forearm を refine_labels.py で後処理(すき間埋めと筋膜)"
+}

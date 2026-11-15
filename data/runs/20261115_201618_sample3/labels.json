@@ -1,0 +1,41 @@
+{
+ "labels": [
+  {
+   "id": 1,
+   "name": "皮下",
+   "color": "#f2c14e",
+   "voxels": 19541
+  },
+  {
+   "id": 2,
+   "name": "浅い筋(橈側手根屈筋の候補)",
+   "color": "#d08bd6",
+   "voxels": 56575
+  },
+  {
+   "id": 3,
+   "name": "レンズ形の筋か腱(浅指屈筋の候補)",
+   "color": "#f08a3c",
+   "voxels": 20583
+  },
+  {
+   "id": 4,
+   "name": "中間の筋(深指屈筋か長母指屈筋の候補)",
+   "color": "#4caf50",
+   "voxels": 97566
+  },
+  {
+   "id": 5,
+   "name": "骨と音響陰影",
+   "color": "#5b7fa6",
+   "voxels": 111827
+  },
+  {
+   "id": 10,
+   "name": "筋膜(膜の線)",
+   "color": "#f5f5dc",
+   "voxels": 6952
+  }
+ ],
+ "source": "sam2_forearm を refine_labels.py で後処理(すき間埋めと筋膜)"
+}

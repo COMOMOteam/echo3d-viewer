@@ -1,0 +1,59 @@
+{
+ "labels": [
+  {
+   "id": 1,
+   "name": "神経か腱の束(候補)",
+   "color": "#f2c14e",
+   "voxels": 142916
+  },
+  {
+   "id": 2,
+   "name": "皮下",
+   "color": "#d08bd6",
+   "voxels": 60356
+  },
+  {
+   "id": 3,
+   "name": "浅層の筋(橈側、橈側手根屈筋か長母指屈筋の候補)",
+   "color": "#3fb8af",
+   "voxels": 320280
+  },
+  {
+   "id": 4,
+   "name": "腱の束(浅指屈筋腱の候補)",
+   "color": "#c9a227",
+   "voxels": 40833
+  },
+  {
+   "id": 5,
+   "name": "浅層の筋(尺側、浅指屈筋の候補)",
+   "color": "#f08a3c",
+   "voxels": 72892
+  },
+  {
+   "id": 6,
+   "name": "深指屈筋(候補)",
+   "color": "#4caf50",
+   "voxels": 1412340
+  },
+  {
+   "id": 7,
+   "name": "方形回内筋(候補)",
+   "color": "#7d6fe0",
+   "voxels": 585127
+  },
+  {
+   "id": 8,
+   "name": "骨と音響陰影",
+   "color": "#5b7fa6",
+   "voxels": 1641539
+  },
+  {
+   "id": 10,
+   "name": "筋膜(膜の線)",
+   "color": "#f5f5dc",
+   "voxels": 50215
+  }
+ ],
+ "source": "seg_ref を refine_labels.py で後処理(すき間埋めと筋膜)"
+}

@@ -64,8 +64,9 @@ void main() {
     if (uColorMode > 0.5) {
       // 構造の色: 表示中の構造は色を付けて一定の不透明度で、それ以外の組織はグレーを薄くして背景に置く
       int id = int(texture(uLab, p).r * 255.0 + 0.5);
-      if (id > 0 && id < 16 && uShow[id] > 0.5) {
-        st = true; a = uStructOp; c = uPal[id] * (0.55 + 0.7 * v) * uBright / 1.3;
+      float mg = texture(uMaskG, p).r;                  // 表示中の構造をならした 0〜1。境目でなめらかに落ちる
+      if (id > 0 && id < 16 && uShow[id] > 0.5 && mg > 0.05) {
+        st = true; a = uStructOp * smoothstep(0.2, 0.8, mg); c = uPal[id] * (0.6 + 0.6 * v) * uBright / 1.3;
       } else {
         a *= uBgOp;
       }
@@ -135,55 +136,82 @@ function boxBlur(src, nx, ny, nz, r) {
   return res;
 }
 
-// 3D の SRAD (斑点を減らす異方性拡散, Yu & Acton 2002 を 6 近傍に広げたもの)。
-// 斑点の強さ q0 は、扇の内側の 5×5×5 窓の変動係数の中央値としてデータから決めるので、機種やゲインが違っても同じ手順で使える。
-// 変動係数が q0 より大きい所(組織の境界)では拡散を止め、斑点と同程度の所だけ均す。扇の外の隣は自分の値で置き換える(反射)
-function srad3d(data, nx, ny, nz, iters, lam = 0.5) {
-  const N = data.length, plane = nx * ny;
-  if (!iters) return data;
-  const valid = new Uint8Array(N), I = new Float32Array(N), c = new Float32Array(N), nb = new Float32Array(6);
-  for (let i = 0; i < N; i++) { valid[i] = data[i] ? 1 : 0; I[i] = Math.max(data[i] / 255, 1e-3); }
-  // q0
-  let s = new Float32Array(N), s2 = new Float32Array(N), vv = new Float32Array(N);
-  for (let i = 0; i < N; i++) { s[i] = I[i]; s2[i] = I[i] * I[i]; vv[i] = valid[i]; }
-  const m = boxMeanF(s, nx, ny, nz, 2), mm = boxMeanF(s2, nx, ny, nz, 2), w = boxMeanF(vv, nx, ny, nz, 2);
+// SRAD を Worker で回す(画面を止めない)。1ボクセルごとに配列を作らない書き方で、旧版より大幅に速い
+const SRAD_WORKER_SRC = `
+function boxMean(src, nx, ny, nz, r) {
+  let a = src, out = new Float32Array(src.length);
+  const dims = [nx, ny, nz], strides = [1, nx, nx * ny], cum = new Float64Array(Math.max(nx, ny, nz) + 1);
+  for (let ax = 0; ax < 3; ax++) {
+    const n = dims[ax], s = strides[ax];
+    const o1 = ax === 0 ? [ny, nz, nx, nx * ny] : ax === 1 ? [nx, nz, 1, nx * ny] : [nx, ny, 1, nx];
+    for (let j = 0; j < o1[1]; j++) for (let i = 0; i < o1[0]; i++) {
+      const base = i * o1[2] + j * o1[3];
+      for (let k = 0; k < n; k++) cum[k + 1] = cum[k] + a[base + k * s];
+      for (let k = 0; k < n; k++) { const lo = k - r < 0 ? 0 : k - r, hi = k + r > n - 1 ? n - 1 : k + r; out[base + k * s] = (cum[hi + 1] - cum[lo]) / (hi - lo + 1); }
+    }
+    if (ax === 0) { a = out; out = new Float32Array(src.length); } else { const t = a; a = out; out = t; }
+  }
+  return a;
+}
+onmessage = (e) => {
+  const { data, nx, ny, nz, iters, id } = e.data, lam = 0.5, N = data.length, P = nx * ny;
+  const valid = new Uint8Array(N), I = new Float32Array(N), c = new Float32Array(N), J = new Float32Array(N);
+  for (let i = 0; i < N; i++) { valid[i] = data[i] ? 1 : 0; I[i] = data[i] ? data[i] / 255 : 1e-3; }
+  const s = Float32Array.from(I), s2 = new Float32Array(N), vv = new Float32Array(N);
+  for (let i = 0; i < N; i++) { s2[i] = I[i] * I[i]; vv[i] = valid[i]; }
+  const m = boxMean(s, nx, ny, nz, 2), mm = boxMean(s2, nx, ny, nz, 2), w = boxMean(vv, nx, ny, nz, 2);
   const cvs = [];
   for (let i = 0; i < N; i += 7) if (w[i] > 0.999) cvs.push(Math.sqrt(Math.max(mm[i] - m[i] * m[i], 0)) / Math.max(m[i], 1e-3));
   cvs.sort((a, b) => a - b);
   const q0i = cvs.length ? cvs[cvs.length >> 1] : 0.3;
-  s = s2 = vv = null;
-  const offs = [1, -1, nx, -nx, plane, -plane];
   for (let t = 0; t < iters; t++) {
     const q0 = q0i * Math.exp(-t * lam / 36), q02 = q0 * q0;
-    for (let i = 0; i < N; i++) {
+    for (let z = 0, i = 0; z < nz; z++) for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++, i++) {
       if (!valid[i]) { c[i] = 0; continue; }
-      const x = i % nx, y = ((i / nx) | 0) % ny, z = (i / plane) | 0, Ii = I[i];
-      const ok = [x < nx - 1, x > 0, y < ny - 1, y > 0, z < nz - 1, z > 0];
-      let G2 = 0, L = 0;
-      for (let k = 0; k < 6; k++) { const j = i + offs[k]; const n = ok[k] && valid[j] ? I[j] : Ii; const d = n - Ii; G2 += d * d; L += d; }
+      const Ii = I[i]; let G2 = 0, L = 0, n, d;
+      n = (x < nx - 1 && valid[i + 1]) ? I[i + 1] : Ii; d = n - Ii; G2 += d * d; L += d;
+      n = (x > 0 && valid[i - 1]) ? I[i - 1] : Ii; d = n - Ii; G2 += d * d; L += d;
+      n = (y < ny - 1 && valid[i + nx]) ? I[i + nx] : Ii; d = n - Ii; G2 += d * d; L += d;
+      n = (y > 0 && valid[i - nx]) ? I[i - nx] : Ii; d = n - Ii; G2 += d * d; L += d;
+      n = (z < nz - 1 && valid[i + P]) ? I[i + P] : Ii; d = n - Ii; G2 += d * d; L += d;
+      n = (z > 0 && valid[i - P]) ? I[i - P] : Ii; d = n - Ii; G2 += d * d; L += d;
       G2 /= Ii * Ii; L /= Ii;
-      const q2 = Math.max((0.5 * G2 / 3 - (L / 6) * (L / 6)) / ((1 + L / 6) * (1 + L / 6)), 0);
-      c[i] = Math.min(Math.max(1 / (1 + (q2 - q02) / (q02 * (1 + q02))), 0), 1);
+      const l6 = L / 6, q2 = Math.max((G2 / 6 - l6 * l6) / ((1 + l6) * (1 + l6)), 0);
+      const cc = 1 / (1 + (q2 - q02) / (q02 * (1 + q02)));
+      c[i] = cc < 0 ? 0 : cc > 1 ? 1 : cc;
     }
-    const J = new Float32Array(N);
-    for (let i = 0; i < N; i++) {
+    for (let z = 0, i = 0; z < nz; z++) for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++, i++) {
       if (!valid[i]) { J[i] = 1e-3; continue; }
-      const x = i % nx, y = ((i / nx) | 0) % ny, z = (i / plane) | 0, Ii = I[i];
-      const ok = [x < nx - 1, x > 0, y < ny - 1, y > 0, z < nz - 1, z > 0];
-      let D = 0;
-      for (let k = 0; k < 6; k++) {
-        const j = i + offs[k], inside = ok[k] && valid[j];
-        const n = inside ? I[j] : Ii;
-        const cn = k % 2 === 0 ? (inside ? c[j] : c[i]) : c[i];   // 前向きの差分は隣の係数、後ろ向きは自分の係数
-        D += cn * (n - Ii);
-      }
+      const Ii = I[i], ci = c[i]; let D = 0;
+      if (x < nx - 1 && valid[i + 1]) D += c[i + 1] * (I[i + 1] - Ii);
+      if (x > 0 && valid[i - 1]) D += ci * (I[i - 1] - Ii);
+      if (y < ny - 1 && valid[i + nx]) D += c[i + nx] * (I[i + nx] - Ii);
+      if (y > 0 && valid[i - nx]) D += ci * (I[i - nx] - Ii);
+      if (z < nz - 1 && valid[i + P]) D += c[i + P] * (I[i + P] - Ii);
+      if (z > 0 && valid[i - P]) D += ci * (I[i - P] - Ii);
       J[i] = Ii + lam / 6 * D;
     }
     I.set(J);
+    postMessage({ id, progress: (t + 1) / iters });
   }
   const out = new Uint8Array(N);
-  for (let i = 0; i < N; i++) out[i] = valid[i] ? Math.max(1, Math.min(255, Math.round(I[i] * 255))) : 0;
-  return out;
+  for (let i = 0; i < N; i++) { const v = Math.round(I[i] * 255); out[i] = valid[i] ? (v < 1 ? 1 : v > 255 ? 255 : v) : 0; }
+  postMessage({ id, out }, [out.buffer]);
+};`;
+let sradWorker = null;
+function sradAsync(data, nx, ny, nz, iters, onProgress) {
+  if (!iters) return Promise.resolve(data);
+  if (!sradWorker) sradWorker = new Worker(URL.createObjectURL(new Blob([SRAD_WORKER_SRC], { type: 'text/javascript' })));
+  const id = Math.random();
+  return new Promise((resolve) => {
+    const h = (e) => {
+      if (e.data.id !== id) return;
+      if (e.data.out) { sradWorker.removeEventListener('message', h); resolve(e.data.out); }
+      else onProgress?.(e.data.progress);
+    };
+    sradWorker.addEventListener('message', h);
+    sradWorker.postMessage({ data: data.slice(), nx, ny, nz, iters, id });
+  });
 }
 
 // 半径 r の箱平均を3軸に順にかける(端は窓を縮めて平均)。累積和で O(N)
@@ -243,7 +271,7 @@ export class Stack3D {
     this.k = 0; this.kf = 0; this.playing = false; this.speed = 8; this.mode = 'anim'; this.fade = 0;
     this.params = { shade: true, laz: -35, lel: 40, spec: 0.35, smooth: 1, lo: 0.40, hi: 0.95, gamma: 1.5, opacity: 0.35, bright: 1.3,
                     denoise: 0, invert: false, cx: 0, cy: 0, cz: 0,
-                    colorMode: 'labels', structOp: 0.25, bgOp: 0.15, show: null };
+                    colorMode: 'labels', structOp: 0.1, bgOp: 0.15, show: null };
     this.onchange = () => {};
     this.dirty = true;
     this.last = performance.now();
@@ -336,7 +364,7 @@ export class Stack3D {
         uVol: { value: this.volTex }, uGrad: { value: this.volTex }, uCam: { value: new THREE.Vector3() },
         uDims: { value: new THREE.Vector3(nx, ny, nz) }, uLight: { value: new THREE.Vector3(0, 0, 1) },
         uLab: { value: null }, uMaskG: { value: null }, uPal: { value: Array.from({ length: 16 }, () => new THREE.Vector3(1, 1, 1)) },
-        uShow: { value: new Array(16).fill(1) }, uColorMode: { value: 0 }, uStructOp: { value: 0.25 }, uBgOp: { value: 0.15 },
+        uShow: { value: new Array(16).fill(1) }, uColorMode: { value: 0 }, uStructOp: { value: 0.1 }, uBgOp: { value: 0.15 },
         uInvert: { value: 0 }, uClip0: { value: new THREE.Vector3(0, 0, 0) }, uClip1: { value: new THREE.Vector3(1, 1, 1) },
         uLo: { value: 0.3 }, uHi: { value: 0.9 }, uGamma: { value: 1.5 }, uOpacity: { value: 0.45 }, uBright: { value: 1.3 },
         uShade: { value: 1 }, uSpec: { value: 0.35 }, uFade: { value: 0 },
@@ -352,7 +380,8 @@ export class Stack3D {
                                            new THREE.LineBasicMaterial({ color: 0x3a4250 }));
     outline.scale.copy(size); outline.position.copy(min);
     this.group.add(outline);
-    this.setDenoise(this.params.denoise);
+    await this.setDenoise(this.params.denoise);
+    if (token !== this.token) return;
     // 構造のラベル(あれば): labels.json に番号・名前・色、labels.nrrd に番号のボリューム
     this.labels = null;
     const uu = mat.uniforms;
@@ -393,17 +422,25 @@ export class Stack3D {
 
   // 平滑化(SRAD)の回数を変えてボリュームを作り直す。回数はボクセル 0.3 mm のときの値で、ボクセルの大きさに合わせて
   // (0.3 / ボクセル)^2 倍する(拡散で均される距離が mm で揃うように)
-  setDenoise(n) {
+  // 強さ n はボクセル単位の回数(ボクセルが細かいほど mm で見た平滑化は弱い。細い線を消しすぎないため)
+  async setDenoise(n) {
     this.params.denoise = n;
     if (!this.vol || !this.volume) return;
     const { nx, ny, nz, data } = this.vol;
-    const iters = Math.round(n * Math.pow(0.3 / (this.info.voxel_mm || 0.3), 2));
-    this.disp = srad3d(data, nx, ny, nz, iters);
+    const token = this.denoiseToken = Symbol();
+    this.busy = n ? '斑点を平滑化しています 0%' : null;
+    this.dirty = true;
+    const out = await sradAsync(data, nx, ny, nz, n, (p) => { if (token === this.denoiseToken) { this.busy = `斑点を平滑化しています ${Math.round(p * 100)}%`; this.dirty = true; } });
+    if (token !== this.denoiseToken || !this.volume) return;
+    this.busy = null;
+    this.disp = out;
     this.volTex?.dispose();
     this.volTex = tex3d(withMask(this.disp), nx, ny, nz, THREE.RGFormat);
     this.volume.material.uniforms.uVol.value = this.volTex;
     this.updateHistogram();
     this.setSmooth(this.params.smooth);
+    this.onchange();
+    this.onDenoised?.();
   }
 
   // 表示している値(反転なら 1-輝度)の、扇の内側だけのヒストグラム
@@ -426,7 +463,7 @@ export class Stack3D {
     const m = new Uint8Array(d.length);
     for (let i = 0; i < d.length; i++) m[i] = d[i] && sh[d[i]] ? 255 : 0;
     this.maskTex?.dispose();
-    this.maskTex = tex3d(boxBlur(m, nx, ny, nz, 1), nx, ny, nz);
+    this.maskTex = tex3d(boxBlur(m, nx, ny, nz, 2), nx, ny, nz);     // 5×5×5 でならす(段々の面をなめらかに)
     const u = this.volume.material.uniforms;
     u.uMaskG.value = this.maskTex;
     for (let k = 0; k < 16; k++) u.uShow.value[k] = sh[k] ? 1 : 0;
@@ -525,7 +562,7 @@ export class Stack3D {
       const a = k > 0 && k <= N ? this.slices[k - 1].userData.angle : null;
       this.label.textContent = N ? `断面 ${k} / ${N}` + (a !== null ? `  角度 ${a.toFixed(1)}°` : '') +
         (this.info && this.info.total > N ? `  (全 ${this.info.total} 枚から等間隔に表示)` : '') +
-        (this.fade > 0.5 ? `  ボリュームレンダ${this.params.shade ? '(陰影あり)' : '(陰影なし)'}` : '') : '';
+        (this.fade > 0.5 ? `  ボリュームレンダ${this.params.shade ? '(陰影あり)' : '(陰影なし)'}` : '') + (this.busy ? `  [${this.busy}]` : '') : '';
     }
   }
 }

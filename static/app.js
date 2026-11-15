@@ -268,6 +268,7 @@ function autoWindow() {
   stack.set(readParams()); drawTF();
 }
 for (const id of ['denoise', 'invert']) $(id).addEventListener('change', () => { stack.set(readParams()); autoWindow(); });
+stack.onDenoised = () => { autoWindow(); };
 $('autowin').addEventListener('click', autoWindow);
 $('gsmooth').addEventListener('change', () => stack.set({ smooth: +$('gsmooth').value }));
 stack.set(readParams());
