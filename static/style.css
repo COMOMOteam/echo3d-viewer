@@ -54,6 +54,9 @@ pre#log { background: var(--log-bg); color: var(--log-fg); height: 220px; overfl
 .ctlrow select { width: auto; }
 #prog { flex: 1; min-width: 160px; }
 .tfrow { align-items: flex-start; }
+.labellist { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.labellist label { gap: 4px; }
+.labellist .sw { display: inline-block; width: 11px; height: 11px; border-radius: 2px; }
 #tf { border: 1px solid var(--line); border-radius: 4px; background: #0b0c0f; width: 300px; height: 90px; }
 .tfctl { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 12px; flex: 1; min-width: 240px; }
 .tfctl input { width: 90px; }

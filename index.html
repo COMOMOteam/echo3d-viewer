@@ -109,7 +109,22 @@
           <label>光の方位<input id="laz" type="range" min="-180" max="180" value="-35"></label>
           <label>光の仰角<input id="lel" type="range" min="-90" max="90" value="40"></label>
           <label>鏡面<input id="spec" type="range" min="0" max="100" value="35"></label>
+          <label title="SRAD(斑点を減らす異方性拡散)。境界を残して斑点だけ均す">斑点の平滑化<select id="denoise"><option value="0" selected>なし</option><option value="5">弱</option><option value="10">中</option><option value="20">強</option></select></label>
+          <label class="chk" title="明暗を反転して描く。血管など黒い管や液体が塊として見える"><input id="invert" type="checkbox"> 反転</label>
           <label>勾配の平滑化<select id="gsmooth"><option value="0">なし</option><option value="1" selected>3×3×3</option><option value="2">5×5×5</option></select></label>
+        </div>
+        <div class="ctlrow" id="labelrow" hidden>
+          <label>色<select id="cmode"><option value="labels" selected>構造の色</option><option value="gray">グレー</option></select></label>
+          <label title="色を付けた構造の濃さ">構造の濃さ<input id="sop" type="range" min="2" max="100" value="25"></label>
+          <label title="構造以外の組織(グレー)の濃さ">背景の濃さ<input id="bgop" type="range" min="0" max="100" value="15"></label>
+          <span id="labellist" class="labellist"></span>
+        </div>
+        <div class="ctlrow">
+          <span>切り取り</span>
+          <label title="プローブの横幅の方向に、端から切る">横<input id="cx" type="range" min="0" max="95" value="0"></label>
+          <label title="振った方向に、振り始めの側から切る">振り<input id="cy" type="range" min="0" max="95" value="0"></label>
+          <label title="浅い側から切る">深さ<input id="cz" type="range" min="0" max="95" value="0"></label>
+          <button id="autowin" type="button" title="下限と上限を、いま表示している値の分布から決め直す">窓を自動で合わせる</button>
         </div>
         <div class="ctlrow tfrow">
           <canvas id="tf" width="300" height="90" title="不透明度カーブ(灰色はボリュームの輝度ヒストグラム)"></canvas>

@@ -211,7 +211,8 @@ async function openRun(id, showLog) {
   try {
     await stack.load({ slices: api.slices(id), file: (f) => api.file(id, f) });
     $('prog').max = stack.slices.length;
-    drawTF();
+    autoWindow();
+    buildLabelList();
     if (activeTab() === 'nv') await loadNiivue();
     stack.play();
   } catch (e) {
@@ -227,17 +228,47 @@ stack.onchange = () => {
   $('play').textContent = stack.playing ? '一時停止' : '再生';
 };
 $('play').addEventListener('click', () => stack.playing ? stack.pause() : stack.play());
-$('prog').addEventListener('input', () => { stack.pause(); stack.setProgress(+$('prog').value); });
+// 値は pause() より先に読む。pause() の onchange がスライダーを今の位置に書き戻すので、後で読むと動かした先が消える
+$('prog').addEventListener('input', () => { const k = +$('prog').value; stack.pause(); stack.setProgress(k); });
 $('speed').addEventListener('input', () => stack.speed = +$('speed').value);
 $('vmode').addEventListener('change', () => stack.setMode($('vmode').value));
 function readParams() {
   return {
     shade: $('shade').checked, laz: +$('laz').value, lel: +$('lel').value, spec: $('spec').value / 100,
     lo: $('tlo').value / 100, hi: $('thi').value / 100, gamma: $('tgam').value / 100, opacity: $('top').value / 100, bright: $('tbri').value / 100,
+    denoise: +$('denoise').value, invert: $('invert').checked,
+    colorMode: $('cmode').value, structOp: $('sop').value / 100, bgOp: $('bgop').value / 100, cx: $('cx').value / 100, cy: $('cy').value / 100, cz: $('cz').value / 100,
   };
 }
-for (const id of ['shade', 'laz', 'lel', 'spec', 'tlo', 'thi', 'tgam', 'top', 'tbri'])
+for (const id of ['shade', 'laz', 'lel', 'spec', 'tlo', 'thi', 'tgam', 'top', 'tbri', 'cx', 'cy', 'cz', 'cmode', 'sop', 'bgop'])
   $(id).addEventListener('input', () => { stack.set(readParams()); drawTF(); });
+// 構造の一覧(ラベルがある実行だけ)。チェックで表示を切り替える
+function buildLabelList() {
+  const L = stack.labels;
+  $('labelrow').hidden = !L;
+  const box = $('labellist'); box.textContent = '';
+  if (!L) return;
+  for (const l of L.meta.labels) {
+    const lab = document.createElement('label');
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = true; cb.dataset.id = l.id;
+    const sw = document.createElement('span'); sw.className = 'sw'; sw.style.background = l.color;
+    lab.append(cb, sw, document.createTextNode(l.name));
+    cb.addEventListener('change', () => {
+      const show = Object.fromEntries([...box.querySelectorAll('input')].map(c => [c.dataset.id, c.checked]));
+      stack.set({ show });
+    });
+    box.append(lab);
+  }
+  stack.set(readParams());
+}
+// 平滑化や反転を変えたら、表示する値の分布が変わるので窓も合わせ直す
+function autoWindow() {
+  const w = stack.autoWindow(); if (!w) return;
+  $('tlo').value = Math.round(w.lo * 100); $('thi').value = Math.max(Math.round(w.hi * 100), +$('tlo').value + 1);
+  stack.set(readParams()); drawTF();
+}
+for (const id of ['denoise', 'invert']) $(id).addEventListener('change', () => { stack.set(readParams()); autoWindow(); });
+$('autowin').addEventListener('click', autoWindow);
 $('gsmooth').addEventListener('change', () => stack.set({ smooth: +$('gsmooth').value }));
 stack.set(readParams());
 

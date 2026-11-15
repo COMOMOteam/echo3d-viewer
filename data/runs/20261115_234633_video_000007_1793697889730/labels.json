@@ -1,0 +1,65 @@
+{
+ "labels": [
+  {
+   "id": 1,
+   "name": "橈骨動脈",
+   "color": "#e8433b",
+   "voxels": 9003
+  },
+  {
+   "id": 2,
+   "name": "神経(正中神経かその枝)",
+   "color": "#f2c14e",
+   "voxels": 22037
+  },
+  {
+   "id": 3,
+   "name": "皮下",
+   "color": "#d08bd6",
+   "voxels": 53101
+  },
+  {
+   "id": 4,
+   "name": "橈側手根屈筋",
+   "color": "#3fb8af",
+   "voxels": 125501
+  },
+  {
+   "id": 5,
+   "name": "浅指屈筋",
+   "color": "#f08a3c",
+   "voxels": 262630
+  },
+  {
+   "id": 6,
+   "name": "長母指屈筋",
+   "color": "#7d6fe0",
+   "voxels": 429428
+  },
+  {
+   "id": 7,
+   "name": "深指屈筋",
+   "color": "#4caf50",
+   "voxels": 780493
+  },
+  {
+   "id": 8,
+   "name": "深部(未同定)",
+   "color": "#9e9e9e",
+   "voxels": 1558121
+  },
+  {
+   "id": 9,
+   "name": "橈骨と音響陰影",
+   "color": "#5b7fa6",
+   "voxels": 278791
+  },
+  {
+   "id": 10,
+   "name": "筋膜(膜の線)",
+   "color": "#f5f5dc",
+   "voxels": 71587
+  }
+ ],
+ "source": "seg_ref を refine_labels.py で後処理(すき間埋めと筋膜)"
+}
