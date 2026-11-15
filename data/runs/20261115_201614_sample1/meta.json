@@ -1,0 +1,71 @@
+{
+ "id": "20261115_201614_sample1",
+ "params": {
+  "type": "still",
+  "source": "sample",
+  "sample": "sample1",
+  "name": "sample1",
+  "angles": "-30~30",
+  "pivot": "2.0",
+  "voxel": "0.3",
+  "voxel_auto": false,
+  "mode": "decorr",
+  "step": "",
+  "depth": "",
+  "drop_air": false
+ },
+ "state": "done",
+ "error": null,
+ "created": "2026-11-15T20:16:14",
+ "started": "2026-11-15T20:16:14",
+ "finished": "2026-11-15T20:16:17",
+ "files": {
+  "volume.nrrd": true,
+  "volume_display.nrrd": true,
+  "view_depth_slices.png": true,
+  "view_fan_plane.png": true,
+  "run_info.json": true
+ },
+ "run_info": {
+  "angles_deg": [
+   -30.0,
+   -25.0,
+   -20.0,
+   -15.0,
+   -10.0,
+   -5.0,
+   0.0,
+   5.0,
+   10.0,
+   15.0,
+   20.0,
+   25.0,
+   30.0
+  ],
+  "depth_cm": 3.0,
+  "voxel_mm": 0.3,
+  "px_per_cm": 640.3378378378378,
+  "crop_x": [
+   0,
+   1536
+  ],
+  "crop_y": [
+   0,
+   1986
+  ],
+  "zero_row": 0,
+  "pivot_cm": 2.0,
+  "z_origin_mm": -2.6999999999999997,
+  "y_origin_mm": -25.507439062994614,
+  "volume_shape_ZYX": [
+   114,
+   172,
+   80
+  ],
+  "display_window": [
+   0.0,
+   145.0
+  ]
+ },
+ "title": "サンプル1 静止画 MSK -30~30度 回転中心2cm"
+}

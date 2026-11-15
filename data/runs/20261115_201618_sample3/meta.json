@@ -1,0 +1,77 @@
+{
+ "id": "20261115_201618_sample3",
+ "params": {
+  "type": "still",
+  "source": "sample",
+  "sample": "sample3",
+  "name": "sample3",
+  "angles": "-45~45",
+  "pivot": "0.0",
+  "voxel": "0.3",
+  "voxel_auto": false,
+  "mode": "decorr",
+  "step": "",
+  "depth": "",
+  "drop_air": false
+ },
+ "state": "done",
+ "error": null,
+ "created": "2026-11-15T20:16:18",
+ "started": "2026-11-15T20:16:18",
+ "finished": "2026-11-15T20:16:22",
+ "files": {
+  "volume.nrrd": true,
+  "volume_display.nrrd": true,
+  "view_depth_slices.png": true,
+  "view_fan_plane.png": true,
+  "run_info.json": true
+ },
+ "run_info": {
+  "angles_deg": [
+   -45.0,
+   -40.0,
+   -35.0,
+   -30.0,
+   -25.0,
+   -20.0,
+   -15.0,
+   -10.0,
+   -5.0,
+   0.0,
+   5.0,
+   10.0,
+   15.0,
+   20.0,
+   25.0,
+   30.0,
+   35.0,
+   40.0,
+   45.0
+  ],
+  "depth_cm": 3.0,
+  "voxel_mm": 0.3,
+  "px_per_cm": 492.0022822822823,
+  "crop_x": [
+   0,
+   1604
+  ],
+  "crop_y": [
+   0,
+   1526
+  ],
+  "zero_row": 0,
+  "pivot_cm": 0.0,
+  "z_origin_mm": 0.0,
+  "y_origin_mm": -21.93170615154948,
+  "volume_shape_ZYX": [
+   104,
+   148,
+   109
+  ],
+  "display_window": [
+   0.0,
+   118.0
+  ]
+ },
+ "title": "サンプル3 静止画 MSK 3cm -45~45度"
+}

@@ -1,0 +1,35 @@
+[
+ {
+  "id": "sample1",
+  "title": "サンプル1 静止画 MSK -30~30度 回転中心2cm",
+  "type": "still",
+  "path": "sample1_MSK_-30~30_pivot2.0",
+  "angles": "-30~30",
+  "pivot": 2.0,
+  "voxel": 0.3,
+  "note": "Vscan Air の静止画13枚(5度刻み)。回転中心が画像上端より2.0cm上のリグで撮影",
+  "run": "20261115_201614_sample1"
+ },
+ {
+  "id": "sample2",
+  "title": "サンプル2 動画 Exam42 0~35度 decorr",
+  "type": "video",
+  "path": "sample2_Exam42_video_0~35/video_000042_1792591169595_crf18.mp4",
+  "angles": "0~35",
+  "mode": "decorr",
+  "voxel": 0.3,
+  "note": "動画178フレーム。角度は隣のフレームとのスペックル相関の落ちから割り当てる",
+  "run": "20261115_200721_sample2"
+ },
+ {
+  "id": "sample3",
+  "title": "サンプル3 静止画 MSK 3cm -45~45度",
+  "type": "still",
+  "path": "sample3_MSK_-45~45",
+  "angles": "-45~45",
+  "pivot": 0.0,
+  "voxel": 0.3,
+  "note": "Vscan Air の静止画19枚(5度刻み、表示深さ3cm)",
+  "run": "20261115_201618_sample3"
+ }
+]

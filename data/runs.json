@@ -1,0 +1,29 @@
+[
+ {
+  "id": "20261115_201614_sample1",
+  "title": "サンプル1 静止画 MSK -30~30度 回転中心2cm",
+  "state": "done",
+  "type": "still",
+  "created": "2026-11-15T20:16:14",
+  "has_volume": true,
+  "decimation": 1
+ },
+ {
+  "id": "20261115_200721_sample2",
+  "title": "サンプル2 動画 Exam42 0~35度 decorr",
+  "state": "done",
+  "type": "video",
+  "created": "2026-11-15T20:07:21",
+  "has_volume": true,
+  "decimation": 1
+ },
+ {
+  "id": "20261115_201618_sample3",
+  "title": "サンプル3 静止画 MSK 3cm -45~45度",
+  "state": "done",
+  "type": "still",
+  "created": "2026-11-15T20:16:18",
+  "has_volume": true,
+  "decimation": 1
+ }
+]

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="echo3d-mode" content="static">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>エコー3D再構成</title>
+<link rel="stylesheet" href="static/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+    "@niivue/niivue": "https://cdn.jsdelivr.net/npm/@niivue/niivue@0.46.0/dist/index.js"
+  }
+}
+</script>
+</head>
+<body>
+<header><h1>エコー3D再構成</h1><span class="sub">扇状スイープの B モード画像・動画から 3D ボリュームを組む</span></header>
+<main>
+<section id="left">
+  <div id="staticnote" class="card note hidden">これは閲覧専用の公開版です。同梱サンプルの再構成結果だけを見られます。自分のデータで再構成するときは、ローカル版 (start.command) で実行してください。</div>
+  <div class="card">
+    <h2>サンプル</h2>
+    <div id="samples" class="samples"></div>
+  </div>
+
+  <div class="card">
+    <h2>入力</h2>
+    <div class="row">
+      <label><input type="radio" name="type" value="still" checked> 静止画フォルダ</label>
+      <label><input type="radio" name="type" value="video"> 動画</label>
+    </div>
+    <div class="row">
+      <label><input type="radio" name="source" value="path" checked> パスを指定</label>
+      <label><input type="radio" name="source" value="upload"> アップロード</label>
+      <label><input type="radio" name="source" value="sample" disabled> サンプル</label>
+    </div>
+    <div id="src-path" class="field">
+      <div class="inline"><input id="path" type="text" placeholder="/Users/.../01_raw_xxx/22_MSK_-30~30"><button id="choose" type="button" title="macOS のダイアログで選ぶ">選ぶ…</button></div>
+    </div>
+    <div id="src-upload" class="field hidden">
+      <input id="files" type="file" multiple>
+      <div id="upinfo" class="hint"></div>
+    </div>
+    <div id="src-sample" class="field hidden"><div id="sampleinfo" class="hint"></div></div>
+    <div class="field"><label>名前(出力フォルダ名に付く)<input id="name" type="text" placeholder="空欄なら入力名"></label></div>
+  </div>
+
+  <div class="card">
+    <h2>パラメータ</h2>
+    <div class="grid2">
+      <label>角度の範囲 (度)<input id="angles" type="text" placeholder="-30~30"></label>
+      <label class="still-only">刻み (度)<input id="step" type="number" step="0.5" placeholder="5"></label>
+      <label class="video-only">角度の割当<select id="mode"><option value="decorr">decorr(相関の落ち)</option><option value="time">time(等速)</option></select></label>
+      <label class="still-only">回転中心 pivot (cm)<input id="pivot" type="number" step="0.1" placeholder="0"></label>
+      <label>ボクセル (mm)<input id="voxel" type="number" step="0.05" value="0.3"></label>
+      <label class="chk"><input id="voxel_auto" type="checkbox"> ボクセル自動</label>
+      <label class="still-only">表示深さ (cm)<input id="depth" type="number" step="0.5" placeholder="目盛りから読む"></label>
+      <label class="chk still-only"><input id="drop_air" type="checkbox"> drop-air(空中の画像を除く)</label>
+    </div>
+    <div class="hint" id="paramhint">静止画: 角度は撮った順に割り当てる(例 -45~45、0~-45,+5~45)。空欄ならフォルダ名から読む。<br>動画: 角度の範囲は始点~終点。回転中心は動画では使えない(元のコードに無い)。</div>
+    <button id="run" class="primary" type="button">実行</button>
+    <span id="runmsg" class="hint"></span>
+  </div>
+
+  <div class="card">
+    <h2>ログ</h2>
+    <pre id="log"></pre>
+  </div>
+
+  <div class="card">
+    <h2>過去の実行 <button id="refresh" type="button" class="small">更新</button></h2>
+    <ul id="runs"></ul>
+    <div id="importrow" class="inline" style="margin-top:8px"><input id="importpath" type="text" placeholder="既存の出力フォルダ (04_output/...) を過去の実行として読み込む"><button id="importbtn" type="button">読み込む</button></div>
+    <div id="importmsg" class="hint"></div>
+  </div>
+</section>
+
+<section id="right">
+  <div class="card" id="result">
+    <div class="resulthead">
+      <h2 id="rtitle">結果</h2>
+      <div class="dl">
+        <a id="dl-vol" class="button disabled" href="#">volume.nrrd</a>
+        <a id="dl-disp" class="button disabled" href="#">volume_display.nrrd</a>
+      </div>
+    </div>
+    <div id="rinfo" class="hint">左で実行するか、過去の実行を選ぶ。</div>
+    <div class="tabs">
+      <button class="tab active" data-tab="anim">再構成アニメーション・陰影レンダ</button>
+      <button class="tab" data-tab="nv">直交3断面 (NiiVue)</button>
+      <button class="tab" data-tab="png">確認用の断面画像</button>
+    </div>
+
+    <div class="tabpane" id="tab-anim">
+      <div class="viewer"><canvas id="c3"></canvas><div id="c3label" class="overlay"></div></div>
+      <div class="controls">
+        <div class="ctlrow">
+          <button id="play" type="button">再生</button>
+          <input id="prog" type="range" min="0" max="0" value="0">
+          <span id="progtxt" class="mono">0 / 0</span>
+          <label>速さ<input id="speed" type="range" min="1" max="30" value="8"></label>
+          <label>表示<select id="vmode"><option value="anim">スライス→ボリューム</option><option value="slices">スライスのみ</option><option value="volume">ボリュームのみ</option></select></label>
+        </div>
+        <div class="ctlrow">
+          <label class="chk"><input id="shade" type="checkbox" checked> 陰影 (勾配による Phong)</label>
+          <label>光の方位<input id="laz" type="range" min="-180" max="180" value="-35"></label>
+          <label>光の仰角<input id="lel" type="range" min="-90" max="90" value="40"></label>
+          <label>鏡面<input id="spec" type="range" min="0" max="100" value="35"></label>
+          <label>勾配の平滑化<select id="gsmooth"><option value="0">なし</option><option value="1" selected>3×3×3</option><option value="2">5×5×5</option></select></label>
+        </div>
+        <div class="ctlrow tfrow">
+          <canvas id="tf" width="300" height="90" title="不透明度カーブ(灰色はボリュームの輝度ヒストグラム)"></canvas>
+          <div class="tfctl">
+            <label>下限<input id="tlo" type="range" min="0" max="100" value="40"></label>
+            <label>上限<input id="thi" type="range" min="0" max="100" value="95"></label>
+            <label>曲がり<input id="tgam" type="range" min="20" max="400" value="150"></label>
+            <label>不透明度<input id="top" type="range" min="1" max="100" value="35"></label>
+            <label>明るさ<input id="tbri" type="range" min="50" max="300" value="130"></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabpane hidden" id="tab-nv">
+      <div class="viewer"><canvas id="gl"></canvas></div>
+      <div class="controls">
+        <div class="ctlrow">
+          <label>配置<select id="nvlayout"><option value="mp">3断面+レンダ</option><option value="render">レンダのみ</option><option value="axial">深さ断面</option></select></label>
+          <label>matcap 照明<input id="nvillum" type="range" min="0" max="100" value="0"></label>
+          <label>窓 下限<input id="nvlo" type="range" min="0" max="255" value="0"></label>
+          <label>窓 上限<input id="nvhi" type="range" min="1" max="255" value="255"></label>
+          <span id="nvloc" class="mono"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabpane hidden" id="tab-png">
+      <h3>view_fan_plane.png</h3><img id="img-fan" alt="">
+      <h3>view_depth_slices.png</h3><img id="img-depth" alt="">
+    </div>
+  </div>
+</section>
+</main>
+<script type="module" src="static/app.js"></script>
+</body>
+</html>
