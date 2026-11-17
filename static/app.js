@@ -195,7 +195,8 @@ async function openRun(id, showLog) {
   const p = m.params || {}, ri = m.run_info;
   const ok = m.files && m.files['volume.nrrd'];
   $('rinfo').textContent = ri
-    ? `${p.type === 'video' ? '動画' : '静止画'}  角度 ${ri.angles_deg[0].toFixed(1)}〜${ri.angles_deg.at(-1).toFixed(1)}° (${ri.angles_deg.length} 枚)  ` +
+    ? (ri.sweep === 'linear' ? `平行移動  Y ${ri.positions_mm[0].toFixed(1)}〜${ri.positions_mm.at(-1).toFixed(1)} mm (${ri.positions_mm.length} 断面)  `
+       : `${p.type === 'video' ? '動画' : '静止画'}  角度 ${ri.angles_deg[0].toFixed(1)}〜${ri.angles_deg.at(-1).toFixed(1)}° (${ri.angles_deg.length} 枚)  `) +
       `ボクセル ${ri.voxel_mm} mm  大きさ ${ri.volume_shape_ZYX.join('×')} (深さ×振り×横幅)  表示深さ ${ri.depth_cm} cm  ` +
       `${ri.px_per_cm.toFixed(2)} px/cm  pivot ${ri.pivot_cm} cm`
     : `状態: ${m.state}${m.error ? '  ' + m.error : ''}`;

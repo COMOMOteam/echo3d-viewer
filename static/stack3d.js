@@ -324,8 +324,11 @@ export class Stack3D {
     const texs = await Promise.all(info.slices.map(s => loader.loadAsync(src.file(s.file))));
     if (token !== this.token) return;
     info.slices.forEach((s, i) => {
-      const th = s.angle * Math.PI / 180;
-      const c = [pt(0, rTop, th), pt(Wcm, rTop, th), pt(0, rBot, th), pt(Wcm, rBot, th)];
+      const th = (s.angle || 0) * Math.PI / 180;
+      const yl = s.y_mm !== undefined ? s.y_mm / 10 : null;   // 平行移動: 断面は Y = y_mm の面
+      const pl = (u, r) => new THREE.Vector3(u, yl, r);
+      const c = yl !== null ? [pl(0, rTop), pl(Wcm, rTop), pl(0, rBot), pl(Wcm, rBot)]
+                            : [pt(0, rTop, th), pt(Wcm, rTop, th), pt(0, rBot, th), pt(Wcm, rBot, th)];
       const geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.Float32BufferAttribute(c.flatMap(v => [v.x, v.y, v.z]), 3));
       geo.setAttribute('uv', new THREE.Float32BufferAttribute([0, 1, 1, 1, 0, 0, 1, 0], 2));
@@ -340,7 +343,7 @@ export class Stack3D {
                                       new THREE.LineBasicMaterial({ color: 0xffd54a, depthTest: false, transparent: true }));
       mesh.add(edge);
       mesh.renderOrder = 1;
-      mesh.userData = { angle: s.angle, edge };
+      mesh.userData = { angle: s.angle, y_mm: s.y_mm, edge };
       this.group.add(mesh);
       this.slices.push(mesh);
     });
@@ -559,8 +562,9 @@ export class Stack3D {
     }
     this.renderer.render(this.scene, this.camera);
     if (this.label) {
-      const a = k > 0 && k <= N ? this.slices[k - 1].userData.angle : null;
-      this.label.textContent = N ? `断面 ${k} / ${N}` + (a !== null ? `  角度 ${a.toFixed(1)}°` : '') +
+      const ud = k > 0 && k <= N ? this.slices[k - 1].userData : null;
+      const a = ud && ud.angle !== undefined ? ud.angle : null, ym = ud && ud.y_mm !== undefined ? ud.y_mm : null;
+      this.label.textContent = N ? `断面 ${k} / ${N}` + (a !== null ? `  角度 ${a.toFixed(1)}°` : '') + (ym !== null ? `  Y ${ym.toFixed(1)} mm` : '') +
         (this.info && this.info.total > N ? `  (全 ${this.info.total} 枚から等間隔に表示)` : '') +
         (this.fade > 0.5 ? `  ボリュームレンダ${this.params.shade ? '(陰影あり)' : '(陰影なし)'}` : '') + (this.busy ? `  [${this.busy}]` : '') : '';
     }

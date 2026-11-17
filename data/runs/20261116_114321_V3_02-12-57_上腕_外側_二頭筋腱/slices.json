@@ -1,0 +1,481 @@
+{
+ "run_id": "20261116_114321_V3_02-12-57_上腕_外側_二頭筋腱",
+ "total": 90,
+ "slices": [
+  {
+   "index": 0,
+   "y_mm": 0.0,
+   "file": "processed/0000.png"
+  },
+  {
+   "index": 1,
+   "y_mm": 1.3,
+   "file": "processed/0001.png"
+  },
+  {
+   "index": 2,
+   "y_mm": 2.7,
+   "file": "processed/0002.png"
+  },
+  {
+   "index": 3,
+   "y_mm": 4.0,
+   "file": "processed/0003.png"
+  },
+  {
+   "index": 4,
+   "y_mm": 5.3,
+   "file": "processed/0004.png"
+  },
+  {
+   "index": 5,
+   "y_mm": 6.7,
+   "file": "processed/0005.png"
+  },
+  {
+   "index": 6,
+   "y_mm": 8.0,
+   "file": "processed/0006.png"
+  },
+  {
+   "index": 7,
+   "y_mm": 9.4,
+   "file": "processed/0007.png"
+  },
+  {
+   "index": 8,
+   "y_mm": 10.7,
+   "file": "processed/0008.png"
+  },
+  {
+   "index": 9,
+   "y_mm": 12.0,
+   "file": "processed/0009.png"
+  },
+  {
+   "index": 10,
+   "y_mm": 13.4,
+   "file": "processed/0010.png"
+  },
+  {
+   "index": 11,
+   "y_mm": 14.7,
+   "file": "processed/0011.png"
+  },
+  {
+   "index": 12,
+   "y_mm": 16.0,
+   "file": "processed/0012.png"
+  },
+  {
+   "index": 13,
+   "y_mm": 17.4,
+   "file": "processed/0013.png"
+  },
+  {
+   "index": 14,
+   "y_mm": 18.7,
+   "file": "processed/0014.png"
+  },
+  {
+   "index": 15,
+   "y_mm": 20.0,
+   "file": "processed/0015.png"
+  },
+  {
+   "index": 16,
+   "y_mm": 21.4,
+   "file": "processed/0016.png"
+  },
+  {
+   "index": 17,
+   "y_mm": 22.7,
+   "file": "processed/0017.png"
+  },
+  {
+   "index": 18,
+   "y_mm": 24.0,
+   "file": "processed/0018.png"
+  },
+  {
+   "index": 19,
+   "y_mm": 25.4,
+   "file": "processed/0019.png"
+  },
+  {
+   "index": 20,
+   "y_mm": 26.7,
+   "file": "processed/0020.png"
+  },
+  {
+   "index": 21,
+   "y_mm": 28.1,
+   "file": "processed/0021.png"
+  },
+  {
+   "index": 22,
+   "y_mm": 29.4,
+   "file": "processed/0022.png"
+  },
+  {
+   "index": 23,
+   "y_mm": 30.7,
+   "file": "processed/0023.png"
+  },
+  {
+   "index": 24,
+   "y_mm": 32.1,
+   "file": "processed/0024.png"
+  },
+  {
+   "index": 25,
+   "y_mm": 33.4,
+   "file": "processed/0025.png"
+  },
+  {
+   "index": 26,
+   "y_mm": 34.7,
+   "file": "processed/0026.png"
+  },
+  {
+   "index": 27,
+   "y_mm": 36.1,
+   "file": "processed/0027.png"
+  },
+  {
+   "index": 28,
+   "y_mm": 37.4,
+   "file": "processed/0028.png"
+  },
+  {
+   "index": 29,
+   "y_mm": 38.7,
+   "file": "processed/0029.png"
+  },
+  {
+   "index": 30,
+   "y_mm": 40.1,
+   "file": "processed/0030.png"
+  },
+  {
+   "index": 31,
+   "y_mm": 41.4,
+   "file": "processed/0031.png"
+  },
+  {
+   "index": 32,
+   "y_mm": 42.8,
+   "file": "processed/0032.png"
+  },
+  {
+   "index": 33,
+   "y_mm": 44.1,
+   "file": "processed/0033.png"
+  },
+  {
+   "index": 34,
+   "y_mm": 45.4,
+   "file": "processed/0034.png"
+  },
+  {
+   "index": 35,
+   "y_mm": 46.8,
+   "file": "processed/0035.png"
+  },
+  {
+   "index": 36,
+   "y_mm": 48.1,
+   "file": "processed/0036.png"
+  },
+  {
+   "index": 37,
+   "y_mm": 49.4,
+   "file": "processed/0037.png"
+  },
+  {
+   "index": 38,
+   "y_mm": 50.8,
+   "file": "processed/0038.png"
+  },
+  {
+   "index": 39,
+   "y_mm": 52.1,
+   "file": "processed/0039.png"
+  },
+  {
+   "index": 40,
+   "y_mm": 53.4,
+   "file": "processed/0040.png"
+  },
+  {
+   "index": 41,
+   "y_mm": 54.8,
+   "file": "processed/0041.png"
+  },
+  {
+   "index": 42,
+   "y_mm": 56.1,
+   "file": "processed/0042.png"
+  },
+  {
+   "index": 43,
+   "y_mm": 57.4,
+   "file": "processed/0043.png"
+  },
+  {
+   "index": 44,
+   "y_mm": 58.8,
+   "file": "processed/0044.png"
+  },
+  {
+   "index": 45,
+   "y_mm": 60.1,
+   "file": "processed/0045.png"
+  },
+  {
+   "index": 46,
+   "y_mm": 61.5,
+   "file": "processed/0046.png"
+  },
+  {
+   "index": 47,
+   "y_mm": 62.8,
+   "file": "processed/0047.png"
+  },
+  {
+   "index": 48,
+   "y_mm": 64.1,
+   "file": "processed/0048.png"
+  },
+  {
+   "index": 49,
+   "y_mm": 65.5,
+   "file": "processed/0049.png"
+  },
+  {
+   "index": 50,
+   "y_mm": 66.8,
+   "file": "processed/0050.png"
+  },
+  {
+   "index": 51,
+   "y_mm": 68.1,
+   "file": "processed/0051.png"
+  },
+  {
+   "index": 52,
+   "y_mm": 69.5,
+   "file": "processed/0052.png"
+  },
+  {
+   "index": 53,
+   "y_mm": 70.8,
+   "file": "processed/0053.png"
+  },
+  {
+   "index": 54,
+   "y_mm": 72.1,
+   "file": "processed/0054.png"
+  },
+  {
+   "index": 55,
+   "y_mm": 73.5,
+   "file": "processed/0055.png"
+  },
+  {
+   "index": 56,
+   "y_mm": 74.8,
+   "file": "processed/0056.png"
+  },
+  {
+   "index": 57,
+   "y_mm": 76.1,
+   "file": "processed/0057.png"
+  },
+  {
+   "index": 58,
+   "y_mm": 77.5,
+   "file": "processed/0058.png"
+  },
+  {
+   "index": 59,
+   "y_mm": 78.8,
+   "file": "processed/0059.png"
+  },
+  {
+   "index": 60,
+   "y_mm": 80.2,
+   "file": "processed/0060.png"
+  },
+  {
+   "index": 61,
+   "y_mm": 81.5,
+   "file": "processed/0061.png"
+  },
+  {
+   "index": 62,
+   "y_mm": 82.8,
+   "file": "processed/0062.png"
+  },
+  {
+   "index": 63,
+   "y_mm": 84.2,
+   "file": "processed/0063.png"
+  },
+  {
+   "index": 64,
+   "y_mm": 85.5,
+   "file": "processed/0064.png"
+  },
+  {
+   "index": 65,
+   "y_mm": 86.8,
+   "file": "processed/0065.png"
+  },
+  {
+   "index": 66,
+   "y_mm": 88.2,
+   "file": "processed/0066.png"
+  },
+  {
+   "index": 67,
+   "y_mm": 89.5,
+   "file": "processed/0067.png"
+  },
+  {
+   "index": 68,
+   "y_mm": 90.8,
+   "file": "processed/0068.png"
+  },
+  {
+   "index": 69,
+   "y_mm": 92.2,
+   "file": "processed/0069.png"
+  },
+  {
+   "index": 70,
+   "y_mm": 93.5,
+   "file": "processed/0070.png"
+  },
+  {
+   "index": 71,
+   "y_mm": 94.9,
+   "file": "processed/0071.png"
+  },
+  {
+   "index": 72,
+   "y_mm": 96.2,
+   "file": "processed/0072.png"
+  },
+  {
+   "index": 73,
+   "y_mm": 97.5,
+   "file": "processed/0073.png"
+  },
+  {
+   "index": 74,
+   "y_mm": 98.9,
+   "file": "processed/0074.png"
+  },
+  {
+   "index": 75,
+   "y_mm": 100.2,
+   "file": "processed/0075.png"
+  },
+  {
+   "index": 76,
+   "y_mm": 101.5,
+   "file": "processed/0076.png"
+  },
+  {
+   "index": 77,
+   "y_mm": 102.9,
+   "file": "processed/0077.png"
+  },
+  {
+   "index": 78,
+   "y_mm": 104.2,
+   "file": "processed/0078.png"
+  },
+  {
+   "index": 79,
+   "y_mm": 105.5,
+   "file": "processed/0079.png"
+  },
+  {
+   "index": 80,
+   "y_mm": 106.9,
+   "file": "processed/0080.png"
+  },
+  {
+   "index": 81,
+   "y_mm": 108.2,
+   "file": "processed/0081.png"
+  },
+  {
+   "index": 82,
+   "y_mm": 109.5,
+   "file": "processed/0082.png"
+  },
+  {
+   "index": 83,
+   "y_mm": 110.9,
+   "file": "processed/0083.png"
+  },
+  {
+   "index": 84,
+   "y_mm": 112.2,
+   "file": "processed/0084.png"
+  },
+  {
+   "index": 85,
+   "y_mm": 113.6,
+   "file": "processed/0085.png"
+  },
+  {
+   "index": 86,
+   "y_mm": 114.9,
+   "file": "processed/0086.png"
+  },
+  {
+   "index": 87,
+   "y_mm": 116.2,
+   "file": "processed/0087.png"
+  },
+  {
+   "index": 88,
+   "y_mm": 117.6,
+   "file": "processed/0088.png"
+  },
+  {
+   "index": 89,
+   "y_mm": 118.9,
+   "file": "processed/0089.png"
+  }
+ ],
+ "px_per_cm": 100.0,
+ "crop_x": [
+  0,
+  221
+ ],
+ "crop_y": [
+  0,
+  289
+ ],
+ "zero_row": 0,
+ "pivot_cm": 0.0,
+ "voxel_mm": 0.2,
+ "z_origin_mm": 0.0,
+ "y_origin_mm": 0.0,
+ "volume_shape_ZYX": [
+  145,
+  595,
+  111
+ ],
+ "display_window": [
+  1.0,
+  182.0
+ ],
+ "depth_cm": 2.89,
+ "sweep": "linear"
+}

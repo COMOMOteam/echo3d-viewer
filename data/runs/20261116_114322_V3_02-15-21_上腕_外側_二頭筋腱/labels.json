@@ -1,0 +1,23 @@
+{
+ "labels": [
+  {
+   "id": 1,
+   "name": "皮下",
+   "color": "#d08bd6",
+   "voxels": 12576032
+  },
+  {
+   "id": 2,
+   "name": "浅い筋区画",
+   "color": "#3cb4af",
+   "voxels": 48630231
+  },
+  {
+   "id": 4,
+   "name": "骨表面と音響陰影",
+   "color": "#5b7fa6",
+   "voxels": 13496600
+  }
+ ],
+ "note": "V3 平行移動。区画は seg_linear.py(SAM 2)。筋の名前は付けていない"
+}

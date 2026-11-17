@@ -1,0 +1,17 @@
+{
+ "labels": [
+  {
+   "id": 1,
+   "name": "皮下",
+   "color": "#d08bd6",
+   "voxels": 11978440
+  },
+  {
+   "id": 2,
+   "name": "浅い筋区画",
+   "color": "#3cb4af",
+   "voxels": 74067229
+  }
+ ],
+ "note": "V3 平行移動。区画は seg_linear.py(SAM 2)。筋の名前は付けていない"
+}
