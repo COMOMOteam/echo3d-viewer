@@ -20,8 +20,8 @@
 <header><h1>エコー3D再構成</h1><span class="sub">扇状スイープの B モード画像・動画から 3D ボリュームを組む</span></header>
 <main>
 <section id="left">
-  <div id="staticnote" class="card note hidden">これは閲覧専用の公開版です。同梱サンプルの再構成結果だけを見られます。自分のデータで再構成するときは、ローカル版 (start.command) で実行してください。</div>
-  <div class="card">
+  <div id="staticnote" class="card note hidden">これは閲覧専用の公開版です。下の一覧から再構成結果を選んで見られます。自分のデータで再構成するときは、ローカル版 (start.command) で実行してください。</div>
+  <div class="card" id="samplecard">
     <h2>サンプル</h2>
     <div id="samples" class="samples"></div>
   </div>
@@ -65,13 +65,13 @@
     <span id="runmsg" class="hint"></span>
   </div>
 
-  <div class="card">
+  <div class="card" id="logcard">
     <h2>ログ</h2>
     <pre id="log"></pre>
   </div>
 
   <div class="card">
-    <h2>過去の実行 <button id="refresh" type="button" class="small">更新</button></h2>
+    <h2><span id="runshead">過去の実行</span> <button id="refresh" type="button" class="small">更新</button></h2>
     <ul id="runs"></ul>
     <div id="importrow" class="inline" style="margin-top:8px"><input id="importpath" type="text" placeholder="既存の出力フォルダ (04_output/...) を過去の実行として読み込む"><button id="importbtn" type="button">読み込む</button></div>
     <div id="importmsg" class="hint"></div>

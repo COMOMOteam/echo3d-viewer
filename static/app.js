@@ -156,11 +156,20 @@ async function refreshRuns() {
   const runs = await api.runs();
   $('runs').innerHTML = '';
   const label = { done: '完了', error: '失敗', running: '実行中', queued: '待ち', interrupted: '中断' };
+  // 公開版: 掃引の仕方で見出しを分ける。状態(完了など)は出さず、種類だけ出す
+  const group = (r) => r.id.includes('_V3_') ? 'V3 平行移動で掃引' : '傾けて扇状に掃引';
+  let lastGroup = null;
   for (const r of runs) {
+    if (STATIC && group(r) !== lastGroup) {
+      lastGroup = group(r);
+      const h = document.createElement('li'); h.className = 'grp'; h.textContent = lastGroup;
+      $('runs').appendChild(h);
+    }
     const li = document.createElement('li');
     li.dataset.id = r.id;
     li.classList.toggle('active', r.id === currentRun);
-    li.innerHTML = `<span></span><span class="st ${r.state}">${r.type === 'video' ? '動画' : '静止画'} ${label[r.state] || r.state}</span>`;
+    const kind = r.id.includes('_V3_') ? '動画' : r.type === 'video' ? '動画' : '静止画';
+    li.innerHTML = `<span></span><span class="st ${r.state}">${STATIC ? kind : `${kind} ${label[r.state] || r.state}`}</span>`;
     li.firstChild.textContent = r.title || r.id;
     li.title = r.id;
     li.addEventListener('click', () => openRun(r.id, true));
@@ -376,12 +385,16 @@ if (STATIC) {          // 静的版: 再構成の入力は使えない
     if (c.querySelector('#run') || c.querySelector('input[name=type]')) c.classList.add('hidden');
   });
   $('refresh').classList.add('hidden');
+  $('samplecard').classList.add('hidden');   // 公開版ではサンプルも再構成結果の一つなので、一覧にまとめる
+  $('logcard').classList.add('hidden');      // ログは再構成の進み具合を見るためのもので、公開版では走らない
+  $('runshead').textContent = '再構成結果';
+  document.body.classList.add('static');
   $('importrow').classList.add('hidden');
   document.querySelector('header .sub').textContent += '(公開版: 閲覧のみ)';
 }
 syncForm();
 await loadSamples();
 await refreshRuns();
-const first = document.querySelector('#runs li');
+const first = document.querySelector('#runs li:not(.grp)');
 const q = new URLSearchParams(location.search).get('run');
 if (q) openRun(q, true); else if (first) openRun(first.dataset.id, true);
