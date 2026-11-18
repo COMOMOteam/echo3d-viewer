@@ -114,6 +114,7 @@
           <label>勾配の平滑化<select id="gsmooth"><option value="0">なし</option><option value="1" selected>3×3×3</option><option value="2">5×5×5</option></select></label>
         </div>
         <div class="ctlrow" id="labelrow" hidden>
+          <span class="viewbtns" id="viewbtns" title="URL に ?view=recon / seg / overlay を付けても開き分けられる"><button type="button" data-view="recon" title="グレーの再構成ボリュームだけ">3D再構成</button><button type="button" data-view="seg" title="色分けした構造だけ(グレーの組織は消す)">セグメンテーション</button><button type="button" data-view="overlay" title="グレーの再構成の上に構造の色を出す">3D再構成＋セグメンテーション</button></span>
           <label>色<select id="cmode"><option value="labels" selected>構造の色</option><option value="gray">グレー</option></select></label>
           <label title="色を付けた構造の濃さ">構造の濃さ<input id="sop" type="range" min="2" max="100" value="10"></label>
           <label title="構造以外の組織(グレー)の濃さ">背景の濃さ<input id="bgop" type="range" min="0" max="100" value="15"></label>

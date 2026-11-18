@@ -260,8 +260,32 @@ function buildLabelList() {
     });
     box.append(lab);
   }
-  stack.set(readParams());
+  setView(curView);
 }
+// 見せ方の3通り。3D再構成 = グレーの再構成、セグメンテーション = 構造の色のみ(背景のグレーを消し、グレーの断面も出さない)、
+// 3D再構成＋セグメンテーション = グレーの上に構造の色。URL の ?view=recon|seg|overlay で開き分けられる
+const VIEW_ALIAS = { color: 'seg', both: 'overlay' };
+let curView = new URLSearchParams(location.search).get('view') || 'overlay';   // 開き直しても押した見せ方を保つ
+let lastBg = 15;
+function setView(v) {
+  v = VIEW_ALIAS[v] || v;
+  if (!['recon', 'seg', 'overlay'].includes(v)) v = 'overlay';
+  curView = v;
+  if (+$('bgop').value > 0) lastBg = +$('bgop').value;
+  $('cmode').value = v === 'recon' ? 'gray' : 'labels';
+  $('bgop').value = v === 'seg' ? 0 : lastBg;
+  const vm = v === 'seg' ? 'volume' : 'anim';
+  if ($('vmode').value !== vm) { $('vmode').value = vm; stack.setMode(vm); }
+  stack.set(readParams()); drawTF(); markView();
+  const u = new URL(location.href); u.searchParams.set('view', v); history.replaceState(null, '', u);
+}
+function markView() {
+  const v = $('cmode').value === 'gray' ? 'recon' : +$('bgop').value === 0 ? 'seg' : 'overlay';
+  curView = v;
+  document.querySelectorAll('#viewbtns button').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+}
+document.querySelectorAll('#viewbtns button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+for (const id of ['cmode', 'bgop']) $(id).addEventListener('input', markView);
 // 平滑化や反転を変えたら、表示する値の分布が変わるので窓も合わせ直す
 function autoWindow() {
   const w = stack.autoWindow(); if (!w) return;
