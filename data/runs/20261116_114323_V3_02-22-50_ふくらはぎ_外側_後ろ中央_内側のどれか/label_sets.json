@@ -35,6 +35,22 @@
   {
    "file": "labels_sonobase",
    "name": "SonoBase(手描きの区画を3枚に渡して伝えたもの)"
+  },
+  {
+   "file": "labels_medsam2",
+   "name": "MedSAM2(手描きの区画を3枚に渡して伝えたもの)"
+  },
+  {
+   "file": "labels_medsam2_usheart",
+   "name": "MedSAM2 心エコー版(手描きの区画を3枚に渡して伝えたもの)"
+  },
+  {
+   "file": "labels_fuse4_P",
+   "name": "4色分け最終版(拍動あり)"
+  },
+  {
+   "file": "labels_fuse4_N",
+   "name": "4色分け最終版(拍動なし)"
   }
  ]
 }
