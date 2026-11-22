@@ -105,15 +105,21 @@ void main() {
 // 物理 (X,Y,Z) → 世界 (X,-Z,Y)
 const PHYS2WORLD = new THREE.Matrix4().set(1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
 
-function parseNrrd(buf) {
+// encoding は raw と gzip(公開版のラベルは gzip で書き出して小さくしている)。gzip はブラウザの DecompressionStream で解く
+async function parseNrrd(buf) {
   const b = new Uint8Array(buf);
   let i = 0;
   while (i < b.length - 1 && !(b[i] === 10 && b[i + 1] === 10)) i++;
   const head = new TextDecoder().decode(b.subarray(0, i));
   const m = head.match(/sizes:\s*(\d+)\s+(\d+)\s+(\d+)/);
-  if (!m || !/type:\s*uint8/.test(head) || !/encoding:\s*raw/.test(head)) throw new Error('NRRD の形式が想定外: ' + head);
-  const [nx, ny, nz] = m.slice(1, 4).map(Number);
-  return { nx, ny, nz, data: b.slice(i + 2, i + 2 + nx * ny * nz) };
+  const enc = (head.match(/encoding:\s*(\S+)/) || [])[1];
+  if (!m || !/type:\s*uint8/.test(head) || !['raw', 'gzip', 'gz'].includes(enc)) throw new Error('NRRD の形式が想定外: ' + head);
+  const [nx, ny, nz] = m.slice(1, 4).map(Number), n = nx * ny * nz;
+  if (enc === 'raw') return { nx, ny, nz, data: b.slice(i + 2, i + 2 + n) };
+  const stream = new Blob([b.subarray(i + 2)]).stream().pipeThrough(new DecompressionStream('gzip'));
+  const data = new Uint8Array(await new Response(stream).arrayBuffer());
+  if (data.length < n) throw new Error(`NRRD の中身が足りない: ${data.length} < ${n}`);
+  return { nx, ny, nz, data: data.length === n ? data : data.slice(0, n) };
 }
 
 function boxBlur(src, nx, ny, nz, r) {
@@ -312,7 +318,8 @@ export class Stack3D {
     const vbuf = await vr.arrayBuffer();
     if (token !== this.token) return;
     this.info = info;
-    const vol = parseNrrd(vbuf);
+    const vol = await parseNrrd(vbuf);
+    if (token !== this.token) return;
     this.vol = vol;
     const VOX = info.voxel_mm / 10, P = info.pivot_cm || 0, px = info.px_per_cm, z0 = info.zero_row || 0;
     const Wpx = info.crop_x[1] - info.crop_x[0], Hpx = info.crop_y[1] - info.crop_y[0];
@@ -385,28 +392,16 @@ export class Stack3D {
     this.group.add(outline);
     await this.setDenoise(this.params.denoise);
     if (token !== this.token) return;
-    // 構造のラベル(あれば): labels.json に番号・名前・色、labels.nrrd に番号のボリューム
-    this.labels = null;
-    const uu = mat.uniforms;
-    uu.uLab.value = this.volTex; uu.uMaskG.value = this.gradTex;
+    // 構造のラベル(あれば): labels.json に番号・名前・色、labels.nrrd に番号のボリューム。
+    // label_sets.json ({sets: [{file, name}]}) があれば、版を選んで読み替えられる(既定は先頭)
+    this.src = src;
+    this.labelSets = null;
     try {
-      const lj = await fetch(src.file('labels.json'));
-      if (lj.ok) {
-        const meta = await lj.json();
-        const lb = await fetch(src.file('labels.nrrd'));
-        if (lb.ok && token === this.token) {
-          const lv = parseNrrd(await lb.arrayBuffer());
-          if (lv.nx === nx && lv.ny === ny && lv.nz === nz) {
-            this.labels = { meta, data: lv.data };
-            const lt = tex3d(lv.data, nx, ny, nz); lt.minFilter = lt.magFilter = THREE.NearestFilter; lt.needsUpdate = true;
-            uu.uLab.value = this.labTex = lt;
-            meta.labels.forEach(l => { if (l.id < 16) uu.uPal.value[l.id].set(...new THREE.Color(l.color).toArray()); });
-            this.params.show = Object.fromEntries(meta.labels.map(l => [l.id, true]));
-            this.updateMask();
-          }
-        }
-      }
-    } catch (e) { console.warn('ラベルを読めなかった', e); }
+      const ls = await fetch(src.file('label_sets.json'));
+      if (ls.ok) this.labelSets = (await ls.json()).sets || null;
+    } catch (e) { /* 版の一覧が無い実行は labels だけ */ }
+    if (token !== this.token) return;
+    await this.loadLabels(this.labelSets?.[0]?.file || 'labels', token);
 
     // カメラ: 扇の面(Y-Z)を斜め前から見る
     const cPhys = min.clone().addScaledVector(size, 0.5);
@@ -457,6 +452,35 @@ export class Stack3D {
     const h = this.histogram; if (!h) return null;
     const tot = h.reduce((a, b) => a + b, 0), q = (p) => { let s = 0; for (let i = 0; i < 256; i++) { s += h[i]; if (s >= p * tot) return i / 255; } return 1; };
     return this.params.invert ? { lo: q(0.9), hi: q(0.995) } : { lo: q(0.6), hi: q(0.995) };
+  }
+
+  // ラベルの版を読み替える。file は拡張子なしの名前(labels なら labels.json と labels.nrrd)
+  async loadLabels(file, token = this.token) {
+    if (!this.volume || !this.src) return;
+    const uu = this.volume.material.uniforms, { nx, ny, nz } = this.vol;
+    this.labels = null; this.labelFile = file;
+    uu.uLab.value = this.volTex; uu.uMaskG.value = this.gradTex;
+    try {
+      const lj = await fetch(this.src.file(file + '.json'));
+      if (lj.ok) {
+        const meta = await lj.json();
+        const lb = await fetch(this.src.file(file + '.nrrd'));
+        if (lb.ok && token === this.token) {
+          const lv = await parseNrrd(await lb.arrayBuffer());
+          if (token !== this.token) return;
+          if (lv.nx === nx && lv.ny === ny && lv.nz === nz) {
+            this.labTex?.dispose();
+            this.labels = { meta, data: lv.data };
+            const lt = tex3d(lv.data, nx, ny, nz); lt.minFilter = lt.magFilter = THREE.NearestFilter; lt.needsUpdate = true;
+            uu.uLab.value = this.labTex = lt;
+            meta.labels.forEach(l => { if (l.id < 16) uu.uPal.value[l.id].set(...new THREE.Color(l.color).toArray()); });
+            this.params.show = Object.fromEntries(meta.labels.map(l => [l.id, true]));
+            this.updateMask();
+          } else console.warn('ラベルの大きさがボリュームと違う', file, [lv.nx, lv.ny, lv.nz], [nx, ny, nz]);
+        }
+      }
+    } catch (e) { console.warn('ラベルを読めなかった', file, e); }
+    this.dirty = true;
   }
 
   // 表示中の構造をまとめた 0/1 を 3×3×3 でならし、構造の面の向き(陰影)に使う

@@ -92,6 +92,7 @@
       <button class="tab active" data-tab="anim">再構成アニメーション・陰影レンダ</button>
       <button class="tab" data-tab="nv">直交3断面 (NiiVue)</button>
       <button class="tab" data-tab="png">確認用の断面画像</button>
+      <button class="tab hidden" data-tab="vo" id="tabbtn-vo" title="元の動画のフレームに、そのフレームが入った Y 断面の色分けを輪郭の線で重ねる">元動画＋色分け</button>
     </div>
 
     <div class="tabpane" id="tab-anim">
@@ -115,6 +116,7 @@
         </div>
         <div class="ctlrow" id="labelrow" hidden>
           <span class="viewbtns" id="viewbtns" title="URL に ?view=recon / seg / overlay を付けても開き分けられる"><button type="button" data-view="recon" title="グレーの再構成ボリュームだけ">3D再構成</button><button type="button" data-view="seg" title="色分けした構造だけ(グレーの組織は消す)">セグメンテーション</button><button type="button" data-view="overlay" title="グレーの再構成の上に構造の色を出す">3D再構成＋セグメンテーション</button></span>
+          <label id="lsetrow" hidden title="同じ再構成に付けた、作り方の違うセグメンテーションを切り替える">版<select id="lset"></select></label>
           <label>色<select id="cmode"><option value="labels" selected>構造の色</option><option value="gray">グレー</option></select></label>
           <label title="色を付けた構造の濃さ">構造の濃さ<input id="sop" type="range" min="2" max="100" value="10"></label>
           <label title="構造以外の組織(グレー)の濃さ">背景の濃さ<input id="bgop" type="range" min="0" max="100" value="15"></label>
@@ -150,6 +152,28 @@
           <label>窓 上限<input id="nvhi" type="range" min="1" max="255" value="255"></label>
           <span id="nvloc" class="mono"></span>
         </div>
+      </div>
+    </div>
+
+    <div class="tabpane hidden" id="tab-vo">
+      <div class="vo-wrap"><div class="vo-stage" id="vo-stage"><video id="vo-video" muted playsinline></video><canvas id="vo-canvas"></canvas></div></div>
+      <div class="controls">
+        <div class="ctlrow">
+          <button id="vo-play" type="button">再生</button>
+          <button id="vo-prev" type="button" title="1コマ戻る">◀ 1コマ</button>
+          <button id="vo-next" type="button" title="1コマ進む">1コマ ▶</button>
+          <div class="vo-seekbox"><input id="vo-seek" type="range" min="0" max="0" value="0" step="any"><canvas id="vo-band" title="緑が掃引の区間(線を出す)、茶色は掃引の前後(線なし)。押すとそこへ飛ぶ"></canvas></div>
+          <span id="vo-time" class="mono"></span>
+        </div>
+        <div class="ctlrow"><span id="vo-status" class="vo-status"></span></div>
+        <div class="ctlrow">
+          <label id="vo-lsetrow" hidden title="上の「再構成アニメーション」の版と同じ。替えると線も替わる">版<select id="vo-lset"></select></label>
+          <label title="線の太さ(画面の px)">線<select id="vo-width"><option value="1">1px</option><option value="1.5" selected>1.5px</option><option value="2">2px</option></select></label>
+          <label class="chk" title="輪郭の内側を薄く塗る"><input id="vo-fill" type="checkbox"> 薄い塗り</label>
+          <label title="表示の高さ">大きさ<select id="vo-size"><option value="640">小</option><option value="900" selected>中</option><option value="1180">大(元の半分)</option><option value="2360">元の大きさ</option></select></label>
+        </div>
+        <div class="ctlrow"><span id="vo-legend" class="labellist"></span></div>
+        <div class="hint">線は、そのフレームが入った Y 断面(0.1 mm)のラベルの輪郭。掃引の前後のフレームは体積に入っていないので線を出さない。灰色になった名前は、いまの断面に無い構造。</div>
       </div>
     </div>
 

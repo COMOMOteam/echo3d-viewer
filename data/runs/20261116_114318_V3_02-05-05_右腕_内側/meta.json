@@ -16,7 +16,9 @@
   "volume_display.nrrd": true,
   "view_depth_slices.png": false,
   "view_fan_plane.png": false,
-  "run_info.json": true
+  "run_info.json": true,
+  "video_overlay.json": true,
+  "video_overlay.mp4": true
  },
  "run_info": {
   "sweep": "linear",

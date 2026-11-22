@@ -1,0 +1,44 @@
+{
+ "sets": [
+  {
+   "file": "labels",
+   "name": "SAM 2(手描きの区画を3枚に渡して伝えたもの)"
+  },
+  {
+   "file": "labels_unsup_k6",
+   "name": "教師なし: クラスタだけ(解剖の縛りなし)"
+  },
+  {
+   "file": "labels_unsup_muscle",
+   "name": "教師なし＋解剖の層の順序: 筋の層"
+  },
+  {
+   "file": "labels_unsup_muscle_lr",
+   "name": "教師なし＋解剖: 筋の層＋左右の分割(試し)"
+  },
+  {
+   "file": "labels_unsup_vessel_D",
+   "name": "教師なし: 脈管(管1本ずつの性質だけ)"
+  },
+  {
+   "file": "labels_unsup_all",
+   "name": "教師なし＋解剖: 筋の層＋脈管・神経"
+  },
+  {
+   "file": "labels_sam3",
+   "name": "SAM 3(手描きの区画を3枚に渡して伝えたもの)"
+  },
+  {
+   "file": "labels_sonobase",
+   "name": "SonoBase(手描きの区画を3枚に渡して伝えたもの)"
+  },
+  {
+   "file": "labels_fuse4_P",
+   "name": "4色分け最終版(拍動あり)"
+  },
+  {
+   "file": "labels_fuse4_N",
+   "name": "4色分け最終版(拍動なし)"
+  }
+ ]
+}

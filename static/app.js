@@ -1,4 +1,5 @@
 import { Stack3D } from './stack3d.js';
+import { VideoOverlay } from './videoverlay.js';
 
 // 動き方は2通り。サーバー版(server.py が api/ を返す)と、export-static で書き出した静的版(data/ の JSON を読むだけ)。
 // どちらも相対 URL だけを使う(GitHub Pages の /<repo>/ 配下でも動くように)。
@@ -194,6 +195,10 @@ $('importbtn').addEventListener('click', async () => {
 // ------------------------------------------------------------ 結果
 const stack = new Stack3D($('c3'), $('c3label'));
 window.stack = stack;
+const vo = new VideoOverlay({ stage: $('vo-stage'), video: $('vo-video'), canvas: $('vo-canvas'), play: $('vo-play'), prev: $('vo-prev'),
+                              next: $('vo-next'), seek: $('vo-seek'), band: $('vo-band'), time: $('vo-time'), status: $('vo-status'),
+                              legend: $('vo-legend'), fill: $('vo-fill'), width: $('vo-width'), size: $('vo-size') });
+window.vo = vo;
 
 async function openRun(id, showLog) {
   currentRun = id;
@@ -217,6 +222,12 @@ async function openRun(id, showLog) {
   const t = Date.now();
   $('img-fan').src = m.files?.['view_fan_plane.png'] ? api.file(id, 'view_fan_plane.png') + `?t=${t}` : '';
   $('img-depth').src = m.files?.['view_depth_slices.png'] ? api.file(id, 'view_depth_slices.png') + `?t=${t}` : '';
+  // 元動画＋色分け(video_overlay.json がある実行だけ)
+  const hasVo = !!m.files?.['video_overlay.json'];
+  $('tabbtn-vo').classList.toggle('hidden', !hasVo);
+  vo.setLabels(null, null);
+  if (hasVo) vo.load(api.file(id, 'video_overlay.json'), api.file(id, 'video_overlay.mp4')).catch(e => { $('vo-status').textContent = '読み込み失敗: ' + e.message; });
+  else { vo.clear(); if (activeTab() === 'vo') document.querySelector('.tab[data-tab=anim]').click(); }
   if (!ok) { stack.clear(); return; }
   try {
     await stack.load({ slices: api.slices(id), file: (f) => api.file(id, f) });
@@ -254,8 +265,22 @@ for (const id of ['shade', 'laz', 'lel', 'spec', 'tlo', 'thi', 'tgam', 'top', 't
   $(id).addEventListener('input', () => { stack.set(readParams()); drawTF(); });
 // 構造の一覧(ラベルがある実行だけ)。チェックで表示を切り替える
 function buildLabelList() {
-  const L = stack.labels;
-  $('labelrow').hidden = !L;
+  const L = stack.labels, sets = stack.labelSets;
+  syncVideoOverlay();
+  // 版の選択(label_sets.json がある実行だけ)。URL の ?lset=<file> で開き分けられる
+  $('lsetrow').hidden = !(sets && sets.length > 1);
+  if (sets && sets.length > 1) {
+    const sel = $('lset');
+    if (sel.dataset.run !== String(stack.src?.file(''))) {
+      sel.textContent = '';
+      for (const s of sets) sel.append(new Option(s.name, s.file));
+      sel.dataset.run = String(stack.src?.file(''));
+      const want = new URLSearchParams(location.search).get('lset');
+      if (want && want !== stack.labelFile && sets.some(s => s.file === want)) { sel.value = want; changeLabelSet(want); return; }
+    }
+    sel.value = stack.labelFile;
+  }
+  $('labelrow').hidden = !L && !(sets && sets.length > 1);
   const box = $('labellist'); box.textContent = '';
   if (!L) return;
   for (const l of L.meta.labels) {
@@ -271,6 +296,27 @@ function buildLabelList() {
   }
   setView(curView);
 }
+async function changeLabelSet(file) {
+  $('lset').disabled = true;
+  try { await stack.loadLabels(file); } finally { $('lset').disabled = false; }
+  const u = new URL(location.href); u.searchParams.set('lset', file); history.replaceState(null, '', u);
+  buildLabelList();
+}
+$('lset').addEventListener('change', () => changeLabelSet($('lset').value));
+// 元動画＋色分けのタブにも同じ版の選択を置く(どちらで替えても両方に効く)
+function syncVideoOverlay() {
+  vo.setLabels(stack.labels, stack.vol);
+  const sets = stack.labelSets, sel = $('vo-lset');
+  $('vo-lsetrow').hidden = !(sets && sets.length > 1);
+  if (!(sets && sets.length > 1)) return;
+  if (sel.dataset.run !== String(stack.src?.file(''))) {
+    sel.textContent = '';
+    for (const s of sets) sel.append(new Option(s.name, s.file));
+    sel.dataset.run = String(stack.src?.file(''));
+  }
+  sel.value = stack.labelFile;
+}
+$('vo-lset').addEventListener('change', () => { $('lset').value = $('vo-lset').value; changeLabelSet($('vo-lset').value); });
 // 見せ方の3通り。3D再構成 = グレーの再構成、セグメンテーション = 構造の色のみ(背景のグレーを消し、グレーの断面も出さない)、
 // 3D再構成＋セグメンテーション = グレーの上に構造の色。URL の ?view=recon|seg|overlay で開き分けられる
 const VIEW_ALIAS = { color: 'seg', both: 'overlay' };
@@ -374,8 +420,10 @@ function activeTab() { return document.querySelector('.tab.active').dataset.tab;
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', async () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === b));
   document.querySelectorAll('.tabpane').forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + b.dataset.tab));
+  vo.setActive(b.dataset.tab === 'vo');
   if (b.dataset.tab === 'nv') await loadNiivue();
   if (b.dataset.tab === 'anim') stack.resize();
+  const u = new URL(location.href); u.searchParams.set('tab', b.dataset.tab); history.replaceState(null, '', u);
 }));
 
 // ------------------------------------------------------------ 起動
@@ -397,4 +445,6 @@ await loadSamples();
 await refreshRuns();
 const first = document.querySelector('#runs li:not(.grp)');
 const q = new URLSearchParams(location.search).get('run');
-if (q) openRun(q, true); else if (first) openRun(first.dataset.id, true);
+const wantTab = new URLSearchParams(location.search).get('tab');    // ?tab=anim|nv|png|vo で開くタブを選べる
+await (q ? openRun(q, true) : first ? openRun(first.dataset.id, true) : null);
+if (wantTab) document.querySelector(`.tab[data-tab="${wantTab}"]:not(.hidden)`)?.click();
